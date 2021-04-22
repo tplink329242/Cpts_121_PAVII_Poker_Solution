@@ -121,6 +121,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\gbyi\Desktop\cpts_121\Cpts_121_Programming_Assignment_7_solution\Cpts_121_PAVII_Poker_Solution\Cpts_121_PAVII_Poker_Solution\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -142,6 +143,7 @@
   <ItemGroup>
     <ClCompile Include="main.c" />
     <ClCompile Include="pavii_logic.c" />
+    <ClCompile Include="pavii_render.c" />
     <ClCompile Include="source.c" />
   </ItemGroup>
   <ItemGroup>
@@ -234,6 +236,14 @@
     <ClInclude Include="include\SDL_video.h" />
     <ClInclude Include="include\SDL_vulkan.h" />
     <ClInclude Include="pavii_logic.h" />
+    <ClInclude Include="pavii_render.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\x64\SDL2.lib" />
+    <Library Include="lib\x64\SDL2main.lib" />
+    <Library Include="lib\x64\SDL2test.lib" />
+    <Library Include="lib\x64\SDL2_image.lib" />
+    <Library Include="lib\x64\SDL2_ttf.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

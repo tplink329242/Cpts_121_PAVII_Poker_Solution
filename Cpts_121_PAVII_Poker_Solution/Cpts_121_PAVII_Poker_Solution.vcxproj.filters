@@ -24,6 +24,9 @@
     <ClCompile Include="pavii_logic.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="pavii_render.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pavii_logic.h">
@@ -293,5 +296,15 @@
     <ClInclude Include="include\SDL_vulkan.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="pavii_render.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\x64\SDL2.lib" />
+    <Library Include="lib\x64\SDL2_image.lib" />
+    <Library Include="lib\x64\SDL2_ttf.lib" />
+    <Library Include="lib\x64\SDL2main.lib" />
+    <Library Include="lib\x64\SDL2test.lib" />
   </ItemGroup>
 </Project>
