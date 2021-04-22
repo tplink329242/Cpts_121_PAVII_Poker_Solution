@@ -177,19 +177,60 @@ int fnc_sdl_render_main(void* poker_shared_data)
 	SDL_Texture* array_poker_hide_tex = fnc_sdl_create_pic_texture(poker_renderer, "res/pic/poker_back.PNG");
 
 	//10 card locations
-	SDL_Rect rect_cards_player[5];
-	SDL_Rect rect_cards_ai[5];
+	SDL_Rect rect_cards_player[MAX_CARD_NUM_HOLD];
+	SDL_Rect rect_cards_ai[MAX_CARD_NUM_HOLD];
 	
+	fnc_InitCardRectArray(rect_cards_player, 500);
+	fnc_InitCardRectArray(rect_cards_ai, 150);
+
+	//player high score tex and location
+	SDL_Rect rect_scores_player = {740, 520, 0, 0};
+	SDL_Texture* tex_scores_player_text = NULL;
+	char text_player_score[20] = "Player:";
+	char text_player_score_num[5] = "";
 	
-	
+	//first round title
+	SDL_Rect rect_first_round_title = { 60, 50, 0, 0 };
+	SDL_Texture* tex_first_round_title = NULL;
+	fnc_sdl_create_text_texture_and_location(poker_renderer, font_medium, textColor_blue, &rect_first_round_title, &tex_first_round_title, "This is the fist round, AI invisible, free to drop!");
+
+	//request card again
+	SDL_Rect rect_first_round_replace = { 710, 600, 0, 0 };
+	SDL_Texture* tex_first_round_replace = NULL;
+	fnc_sdl_create_text_texture_and_location(poker_renderer, font_medium, textColor_Fuchsia, &rect_first_round_replace, &tex_first_round_replace, "Request Again!");
+
+
+	//second round
+
+	//bool request
+	bool is_finish_calculating = false;
+
+
+
+	//ai high score tex and location
+	SDL_Rect rect_scores_ai = { 740, 220, 0, 0 };
+	SDL_Texture* tex_scores_ai_text = NULL;
+	char text_ai_score[20] = "AI:";
+	char text_ai_score_num[5] = "";
+
+
 	//winner text and location
-	SDL_Rect rect_winner_player_round_title = { 90,80, 0, 0 };
-	SDL_Rect rect_winner_ai_round_title = { 90,80, 0, 0 };
+	SDL_Rect rect_winner_player_round_title = { 60,400, 0, 0 };
+	SDL_Rect rect_winner_ai_round_title = { 60,400, 0, 0 };
+	SDL_Rect rect_winner_init_round_title = { 60,400, 0, 0 };
 	SDL_Texture* tex_winner_player_round_title = NULL;
 	SDL_Texture* tex_winner_ai_round_title = NULL;
+	SDL_Texture* tex_winner_init_round_title = NULL;
 
 	fnc_sdl_create_text_texture_and_location(poker_renderer, font_medium, textColor_blue, &rect_winner_player_round_title, &tex_winner_player_round_title, "The winner is player!");
 	fnc_sdl_create_text_texture_and_location(poker_renderer, font_medium, textColor_blue, &rect_winner_ai_round_title, &tex_winner_ai_round_title, "The winner is AI!");
+	fnc_sdl_create_text_texture_and_location(poker_renderer, font_medium, textColor_blue, &rect_winner_init_round_title, &tex_winner_init_round_title, "There is no winner in this round!");
+
+
+	//back to menu button
+	SDL_Rect rect_back_to_menu = { 710, 600, 0, 0 };
+	SDL_Texture* tex_back_to_menu = NULL;
+	fnc_sdl_create_text_texture_and_location(poker_renderer, font_medium, textColor_Fuchsia, &rect_back_to_menu, &tex_back_to_menu, "Back To Menu");
 
 
 	//start game
@@ -237,11 +278,114 @@ int fnc_sdl_render_main(void* poker_shared_data)
 				num_already_used_cards = fnc_GetCardsFromArray(num_already_used_cards, num_get_cards_from_array_player, &user_player, array_card);
 				num_already_used_cards = fnc_GetCardsFromArray(num_already_used_cards, num_get_cards_from_array_ai, &user_ai, array_card);
 
+				//show player cards
+				for (int i = 0; i < MAX_CARD_NUM_HOLD; ++i)
+				{
+					user_player.card_hold[i].show_state = show;
+				}
 
+				//get high score
+				fnc_GetHighScore(&user_player);
+				_itoa(user_player.num_max_score, text_player_score_num, 10);
+
+				//clean the original string
+				for (int i = 0; i < 20; ++i)
+				{
+					text_player_score[i] = '\0';
+				}				
+				strcpy(text_player_score, "Player:");
+				strcat(text_player_score, text_player_score_num);
+				fnc_sdl_create_text_texture_and_location(poker_renderer, font_medium, textColor_blue, &rect_scores_player, &tex_scores_player_text, text_player_score);
+				
+				
 				is_already_pickup_cards = true;
 			}
 			break;
 		case Phase_SecondRound:
+			if (!is_finish_calculating)
+			{
+				//ai drop cards
+				for (int i = 0; i < MAX_CARD_NUM_HOLD; ++i)
+				{
+					if (rand() % 2)
+					{
+						user_ai.card_hold[i].show_state = drop;
+					}
+				}
+
+				//update cards
+				//get numbers from array
+				num_get_cards_from_array_player = fnc_GetHowManyCardWillGetFromArray(user_player);
+				num_get_cards_from_array_ai = fnc_GetHowManyCardWillGetFromArray(user_ai);
+
+				num_already_used_cards = fnc_GetCardsFromArray(num_already_used_cards, num_get_cards_from_array_player, &user_player, array_card);
+				num_already_used_cards = fnc_GetCardsFromArray(num_already_used_cards, num_get_cards_from_array_ai, &user_ai, array_card);
+
+				//init player cards locations
+				fnc_InitCardRectArray(rect_cards_player, 500);
+				
+				//show both cards
+				for (int i = 0; i < MAX_CARD_NUM_HOLD; ++i)
+				{
+					user_player.card_hold[i].show_state = show;
+					user_ai.card_hold[i].show_state = show;
+				}
+
+				//get high score
+
+				//player high score
+				fnc_GetHighScore(&user_player);
+
+				//ai high score
+				fnc_GetHighScore(&user_ai);
+
+				//clean the original string
+				for (int i = 0; i < 5; ++i)
+				{
+					text_player_score_num[i] = '\0';
+				}			
+				_itoa(user_player.num_max_score, text_player_score_num, 10);
+				for (int i = 0; i < 20; ++i)
+				{
+					text_player_score[i] = '\0';
+				}
+				strcpy(text_player_score, "Player:");				
+				strcat(text_player_score, text_player_score_num);
+				fnc_sdl_create_text_texture_and_location(poker_renderer, font_medium, textColor_blue, &rect_scores_player, &tex_scores_player_text, text_player_score);
+
+
+				//clean the original string
+				for (int i = 0; i < 5; ++i)
+				{
+					text_ai_score_num[i] = '\0';
+				}
+				_itoa(user_ai.num_max_score, text_ai_score_num, 10);
+				for (int i = 0; i < 20; ++i)
+				{
+					text_ai_score[i] = '\0';
+				}
+				strcpy(text_ai_score, "AI:");
+				strcat(text_ai_score, text_ai_score_num);
+				fnc_sdl_create_text_texture_and_location(poker_renderer, font_medium, textColor_blue, &rect_scores_ai, &tex_scores_ai_text, text_ai_score);
+
+				
+				//compare who win
+				if (user_ai.num_max_score > user_player.num_max_score)
+				{
+					winner = ai;
+				}
+				if (user_ai.num_max_score < user_player.num_max_score)
+				{
+					winner = player;
+				}
+				if (user_ai.num_max_score == user_player.num_max_score)
+				{
+					winner = init;
+				}
+				
+				is_finish_calculating = true;
+			}
+
 			break;
 
 		default:;
@@ -264,8 +408,65 @@ int fnc_sdl_render_main(void* poker_shared_data)
 				}
 				break;
 			case Phase_FirstRound:
+				//render cards
+				for (int i = 0; i < MAX_CARD_NUM_HOLD; ++i)
+				{
+					//render ai cards
+					if (user_ai.card_hold[i].show_state == hide)
+					{
+						SDL_RenderCopy(poker_renderer, array_poker_hide_tex, NULL, &rect_cards_ai[i]);
+					}
+
+					//render player card
+					SDL_RenderCopy(poker_renderer, array_poker_tex[user_player.card_hold[i].num_suit_id][user_player.card_hold[i].num_face_id], NULL, &rect_cards_player[i]);
+					
+				}
+
+				//render title
+				SDL_RenderCopy(poker_renderer, tex_first_round_title, NULL, &rect_first_round_title);
+			
+				//render player score
+				SDL_RenderCopy(poker_renderer, tex_scores_player_text, NULL, &rect_scores_player);
+
+				//render request again button
+				SDL_RenderCopy(poker_renderer, tex_first_round_replace, NULL, &rect_first_round_replace);
+
 				break;
 			case Phase_SecondRound:
+				for (int i = 0; i < MAX_CARD_NUM_HOLD; ++i)
+				{
+					//render ai cards
+					SDL_RenderCopy(poker_renderer, array_poker_tex[user_ai.card_hold[i].num_suit_id][user_ai.card_hold[i].num_face_id], NULL, &rect_cards_ai[i]);
+			
+					//render player card
+					SDL_RenderCopy(poker_renderer, array_poker_tex[user_player.card_hold[i].num_suit_id][user_player.card_hold[i].num_face_id], NULL, &rect_cards_player[i]);
+
+				}
+
+				//render player score
+				SDL_RenderCopy(poker_renderer, tex_scores_player_text, NULL, &rect_scores_player);
+
+				//render ai score
+				SDL_RenderCopy(poker_renderer, tex_scores_ai_text, NULL, &rect_scores_ai);
+
+				//render the winner
+				switch (winner)
+				{
+				case init:
+					SDL_RenderCopy(poker_renderer, tex_winner_init_round_title, NULL, &rect_winner_init_round_title);
+					break;
+				case player:
+					SDL_RenderCopy(poker_renderer, tex_winner_player_round_title, NULL, &rect_winner_player_round_title);
+					break;
+				case ai:
+					SDL_RenderCopy(poker_renderer, tex_winner_ai_round_title, NULL, &rect_winner_ai_round_title);
+					break;
+				default:;
+				}
+			
+				//render back to menu
+				SDL_RenderCopy(poker_renderer, tex_back_to_menu, NULL, &rect_back_to_menu);
+			
 				break;
 				
 			default:;
@@ -293,16 +494,53 @@ int fnc_sdl_render_main(void* poker_shared_data)
 
 			break;
 		case Phase_FirstRound:
+			if (poker_event.type == SDL_MOUSEBUTTONUP)
+			{
+				for (int i = 0; i < MAX_CARD_NUM_HOLD; ++i)
+				{
+					if (fnc_check_mouse_click_event_checker(rect_cards_player[i]))
+					{
+						if (rect_cards_player[i].w == 80)
+						{
+							user_player.card_hold[i].show_state = show;
+							rect_cards_player[i].w = 120;
+							rect_cards_player[i].h = 200;
+						}
+						else
+						{
+							user_player.card_hold[i].show_state = drop;
+							rect_cards_player[i].w = 80;
+							rect_cards_player[i].h = 150;
+						}
+					}
+				}
+
+				//handle roll again button
+				if (fnc_check_mouse_click_event_checker(rect_first_round_replace))
+				{
+					game_phase = Phase_SecondRound;
+				}
+				
+			}
+
 			break;
 		case Phase_SecondRound:
+			if (poker_event.type == SDL_MOUSEBUTTONUP)
+			{
+				if (fnc_check_mouse_click_event_checker(rect_back_to_menu))
+				{
+					
+					is_finish_calculating = false;
+					is_already_pickup_cards = false;
+					game_phase = Phase_In_Menu;
+				}
+			}
+
 			break;
 
 		default:;
 		}
 
-
-
-		
 		//show the render
 		SDL_RenderPresent(poker_renderer);
 
@@ -334,4 +572,15 @@ int fnc_init_array_poker_face(SDL_Renderer* poker_renderer, SDL_Texture* array_p
 		}
 	}
 	return 0;
+}
+
+void fnc_InitCardRectArray(SDL_Rect rect_cards[MAX_CARD_NUM_HOLD], int first_y_num)
+{
+	for (int i = 0; i < MAX_CARD_NUM_HOLD; ++i)
+	{
+		rect_cards[i].x = 60 + (i * 130);
+		rect_cards[i].y = first_y_num;
+		rect_cards[i].w = 120;
+		rect_cards[i].h = 200;
+	}
 }

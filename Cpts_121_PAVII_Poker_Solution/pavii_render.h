@@ -44,3 +44,6 @@ int fnc_sdl_render_main(void* poker_shared_data);
 
 //init array poker face
 int fnc_init_array_poker_face(SDL_Renderer* poker_renderer, SDL_Texture* array_poker_tex[4][13]);
+
+//init card rect array
+void fnc_InitCardRectArray(SDL_Rect rect_cards[MAX_CARD_NUM_HOLD], int first_x_num);
